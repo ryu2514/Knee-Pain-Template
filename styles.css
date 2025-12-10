@@ -1010,6 +1010,14 @@ body {
   animation: bounce 2s infinite;
 }
 
+.welcome-image {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
 @keyframes bounce {
   0%, 100% {
     transform: translateY(0);
@@ -1117,6 +1125,11 @@ body {
 
   .welcome-icon {
     font-size: 3rem;
+  }
+
+  .welcome-image {
+    width: 150px;
+    height: 150px;
   }
 }
 
