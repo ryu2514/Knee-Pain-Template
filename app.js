@@ -530,7 +530,7 @@ function saveCase() {
     loadCaseHistory();
 
     // 通知
-    alert('症例を保存しました');
+    alert('症例を保存しました！\n\n📂 保存した症例の見返し方:\n1. ホーム画面に戻る\n2. 「最近の症例」セクションから症例をクリック\n\n💡 この画面からCSVファイルもダウンロードできます');
 }
 
 // ========================
@@ -594,4 +594,94 @@ function loadCase(caseItem) {
     } else {
         goToScreen('basic');
     }
+}
+
+// ========================
+// CSV エクスポート
+// ========================
+function exportToCSV() {
+    if (!caseData || !caseData.results) {
+        alert('エクスポートするデータがありません');
+        return;
+    }
+
+    // CSV ヘッダー
+    const headers = [
+        '症例ID',
+        '患者ID',
+        '作成日時',
+        '年齢',
+        '性別',
+        'BMI',
+        '罹患側',
+        '罹病期間',
+        '鵞足炎確率(%)',
+        'PFPS確率(%)',
+        'タナ障害確率(%)',
+        'Hoffa脂肪体炎確率(%)',
+        '半月板損傷確率(%)',
+        '伏在神経障害確率(%)',
+        'その他確率(%)',
+        '鵞足炎カテゴリ',
+        'PFPSカテゴリ',
+        'タナ障害カテゴリ',
+        'Hoffa脂肪体炎カテゴリ',
+        '半月板損傷カテゴリ',
+        '伏在神経障害カテゴリ',
+        'その他カテゴリ'
+    ];
+
+    // CSV データ行
+    const genderMap = { male: '男性', female: '女性', other: 'その他' };
+    const sideMap = { right: '右', left: '左', both: '両側' };
+    const durationMap = { acute: '1週間未満', subacute: '1週間〜3ヶ月', chronic: '3ヶ月以上' };
+    const catMap = { low: '低', moderate: '中', high: '高' };
+
+    const date = new Date(caseData.createdAt);
+    const dateStr = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+    const row = [
+        caseData.id || '',
+        caseData.patientId || '匿名',
+        dateStr,
+        caseData.age || '',
+        genderMap[caseData.gender] || '',
+        caseData.bmi ? caseData.bmi.toFixed(1) : '',
+        sideMap[caseData.affectedSide] || '',
+        durationMap[caseData.duration] || '',
+        caseData.results.probabilities.pes,
+        caseData.results.probabilities.pfps,
+        caseData.results.probabilities.plica,
+        caseData.results.probabilities.hoffa,
+        caseData.results.probabilities.meniscus,
+        caseData.results.probabilities.saphenous,
+        caseData.results.probabilities.other,
+        catMap[caseData.results.categories.pes],
+        catMap[caseData.results.categories.pfps],
+        catMap[caseData.results.categories.plica],
+        catMap[caseData.results.categories.hoffa],
+        catMap[caseData.results.categories.meniscus],
+        catMap[caseData.results.categories.saphenous],
+        catMap[caseData.results.categories.other]
+    ];
+
+    // CSVフォーマットに変換（カンマ区切り、改行で結合）
+    const csvContent = [
+        headers.join(','),
+        row.join(',')
+    ].join('\n');
+
+    // BOM付きUTF-8でエクスポート（Excelで文字化けしないため）
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+    // ダウンロード
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `膝痛評価_${caseData.id || 'export'}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
