@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // チェックボックスのイベントリスナーを追加
     setupCheckboxListeners();
+
+    // 既往歴「その他」の表示切り替え
+    setupHistoryOtherToggle();
 });
 
 // ========================
@@ -145,6 +148,12 @@ function resetAllForms() {
 
     // BMI表示リセット
     document.getElementById('bmiDisplay').style.display = 'none';
+
+    // 既往歴「その他」の入力欄を非表示に
+    const historyOtherInput = document.getElementById('historyOtherInput');
+    if (historyOtherInput) {
+        historyOtherInput.style.display = 'none';
+    }
 }
 
 // ========================
@@ -184,6 +193,25 @@ function setupCheckboxListeners() {
 }
 
 // ========================
+// 既往歴「その他」の表示切り替え
+// ========================
+function setupHistoryOtherToggle() {
+    const historyOtherCheckbox = document.getElementById('historyOther');
+    const historyOtherInput = document.getElementById('historyOtherInput');
+
+    if (historyOtherCheckbox && historyOtherInput) {
+        historyOtherCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                historyOtherInput.style.display = 'block';
+            } else {
+                historyOtherInput.style.display = 'none';
+                document.getElementById('historyOtherText').value = '';
+            }
+        });
+    }
+}
+
+// ========================
 // チェックボックストグル（後方互換性のため残す）
 // ========================
 function toggleCheckbox(element) {
@@ -219,6 +247,10 @@ function collectFormData() {
     data.kneeOA = document.querySelector('input[name="history"][value="kneeOA"]')?.checked || false;
     data.patellarDislocation = document.querySelector('input[name="history"][value="patellarDislocation"]')?.checked || false;
     data.meniscusLigament = document.querySelector('input[name="history"][value="meniscusLigament"]')?.checked || false;
+    data.kneeSurgery = document.querySelector('input[name="history"][value="kneeSurgery"]')?.checked || false;
+    data.kneeInjection = document.querySelector('input[name="history"][value="kneeInjection"]')?.checked || false;
+    data.historyOther = document.querySelector('input[name="history"][value="other"]')?.checked || false;
+    data.historyOtherText = document.getElementById('historyOtherText')?.value || '';
 
     // スポーツ活動
     data.sportsActivity = document.querySelector('input[name="sportsActivity"]:checked')?.value || null;
@@ -615,6 +647,12 @@ function exportToCSV() {
         'BMI',
         '罹患側',
         '罹病期間',
+        '変形性膝関節症',
+        '膝蓋骨脱臼',
+        '半月板・靭帯損傷',
+        '膝手術歴',
+        '膝注射歴',
+        'その他既往歴',
         '鵞足炎確率(%)',
         'PFPS確率(%)',
         'タナ障害確率(%)',
@@ -649,6 +687,12 @@ function exportToCSV() {
         caseData.bmi ? caseData.bmi.toFixed(1) : '',
         sideMap[caseData.affectedSide] || '',
         durationMap[caseData.duration] || '',
+        caseData.kneeOA ? 'あり' : 'なし',
+        caseData.patellarDislocation ? 'あり' : 'なし',
+        caseData.meniscusLigament ? 'あり' : 'なし',
+        caseData.kneeSurgery ? 'あり' : 'なし',
+        caseData.kneeInjection ? 'あり' : 'なし',
+        caseData.historyOtherText || '',
         caseData.results.probabilities.pes,
         caseData.results.probabilities.pfps,
         caseData.results.probabilities.plica,
@@ -665,10 +709,20 @@ function exportToCSV() {
         catMap[caseData.results.categories.other]
     ];
 
-    // CSVフォーマットに変換（カンマ区切り、改行で結合）
+    // CSVフォーマットに変換（カンマ・改行・ダブルクォートをエスケープ）
+    const escapeCSV = (value) => {
+        if (value === null || value === undefined) return '';
+        const str = String(value);
+        // カンマ、改行、ダブルクォートが含まれている場合はダブルクォートで囲む
+        if (str.includes(',') || str.includes('\n') || str.includes('"')) {
+            return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+    };
+
     const csvContent = [
-        headers.join(','),
-        row.join(',')
+        headers.map(escapeCSV).join(','),
+        row.map(escapeCSV).join(',')
     ].join('\n');
 
     // BOM付きUTF-8でエクスポート（Excelで文字化けしないため）
