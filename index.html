@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="膝痛患者の鵞足炎・PFPS・タナ障害の可能性を推定する臨床推論サポートツール">
+  <title>膝痛問診チェックリスト | 臨床推論サポートツール</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <h1 class="app-logo">🦵 膝痛問診チェックリスト</h1>
+      <p class="app-subtitle">臨床推論サポートツール</p>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-steps">
+        <div class="progress-step active" data-step="1">
+          <div class="step-circle">1</div>
+          <span class="step-label">ホーム</span>
+        </div>
+        <div class="progress-step" data-step="2">
+          <div class="step-circle">2</div>
+          <span class="step-label">基本情報</span>
+        </div>
+        <div class="progress-step" data-step="3">
+          <div class="step-circle">3</div>
+          <span class="step-label">症状</span>
+        </div>
+        <div class="progress-step" data-step="4">
+          <div class="step-circle">4</div>
+          <span class="step-label">検査</span>
+        </div>
+        <div class="progress-step" data-step="5">
+          <div class="step-circle">5</div>
+          <span class="step-label">画像</span>
+        </div>
+        <div class="progress-step" data-step="6">
+          <div class="step-circle">6</div>
+          <span class="step-label">結果</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 1: Home -->
+    <section class="screen active" id="screen-home">
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-icon">📋</span>
+          新規評価を開始
+        </h2>
+        <p style="color: var(--gray-400); font-size: var(--font-size-sm); margin-bottom: var(--spacing-lg);">
+          膝痛の原因として鵞足炎・PFPS・タナ障害の可能性を推定します。
+        </p>
+        <button class="btn btn-primary btn-large" onclick="startNewCase()">
+          ✨ 新規症例を作成
+        </button>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-icon">📁</span>
+          最近の症例
+        </h2>
+        <div id="caseHistory" class="case-list">
+          <!-- 動的に追加 -->
+        </div>
+      </div>
+
+      <div class="disclaimer">
+        <div class="disclaimer-title">⚠️ ご注意</div>
+        <div class="disclaimer-text">
+          本ツールは診断を行うものではありません。臨床推論を整理するための参考ツールとしてご利用ください。
+          最終的な診断は医師が行います。
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 2: Basic Information -->
+    <section class="screen" id="screen-basic">
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-icon">👤</span>
+          基本情報
+        </h2>
+
+        <div class="form-group">
+          <label class="form-label">患者ID / 名前（任意）</label>
+          <input type="text" class="form-input" id="patientId" placeholder="匿名でも可">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">年齢</label>
+          <input type="number" class="form-input" id="age" min="1" max="120" placeholder="例: 45">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">性別</label>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="gender" id="gender-male" value="male" class="option-input">
+              <label class="option-label" for="gender-male">男性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="gender" id="gender-female" value="female" class="option-input">
+              <label class="option-label" for="gender-female">女性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="gender" id="gender-other" value="other" class="option-input">
+              <label class="option-label" for="gender-other">その他</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">身長 (cm)</label>
+          <input type="number" class="form-input" id="height" min="50" max="250" placeholder="例: 165">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">体重 (kg)</label>
+          <input type="number" class="form-input" id="weight" min="20" max="300" placeholder="例: 60">
+        </div>
+
+        <div class="form-group" id="bmiDisplay" style="display: none;">
+          <label class="form-label">BMI（自動計算）</label>
+          <div style="font-size: var(--font-size-lg); font-weight: 600; color: var(--primary-400);" id="bmiValue"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">罹患側</label>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="affectedSide" id="side-right" value="right" class="option-input">
+              <label class="option-label" for="side-right">右</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="affectedSide" id="side-left" value="left" class="option-input">
+              <label class="option-label" for="side-left">左</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="affectedSide" id="side-both" value="both" class="option-input">
+              <label class="option-label" for="side-both">両側</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">罹病期間</label>
+          <select class="form-select" id="duration">
+            <option value="">選択してください</option>
+            <option value="acute">1週間未満</option>
+            <option value="subacute">1週間〜3ヶ月</option>
+            <option value="chronic">3ヶ月以上</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-icon">📜</span>
+          既往歴
+        </h2>
+
+        <div class="checkbox-list">
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="history" value="kneeOA">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">変形性膝関節症と診断されたことがある</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="history" value="patellarDislocation">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝蓋骨脱臼・亜脱臼歴がある</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="history" value="meniscusLigament">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">半月板損傷・靭帯損傷の既往がある</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="history" value="kneeSurgery">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝の手術歴がある（TKA・関節鏡など）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="history" value="kneeInjection">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝への注射歴がある</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-icon">🏃</span>
+          スポーツ歴・活動レベル
+        </h2>
+
+        <div class="option-group" style="flex-direction: column;">
+          <div class="option-item" style="min-width: 100%;">
+            <input type="radio" name="sportsActivity" id="sports-competitive" value="competitive" class="option-input">
+            <label class="option-label" for="sports-competitive">競技スポーツ（ランニング、ジャンプ系など）</label>
+          </div>
+          <div class="option-item" style="min-width: 100%;">
+            <input type="radio" name="sportsActivity" id="sports-recreational" value="recreational"
+              class="option-input">
+            <label class="option-label" for="sports-recreational">レクリエーションレベル</label>
+          </div>
+          <div class="option-item" style="min-width: 100%;">
+            <input type="radio" name="sportsActivity" id="sports-none" value="none" class="option-input">
+            <label class="option-label" for="sports-none">非スポーツ</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="goToScreen('home')">← 戻る</button>
+        <button class="btn btn-primary" onclick="goToScreen('symptoms')">次へ →</button>
+      </div>
+    </section>
+
+    <!-- Screen 3: Symptoms -->
+    <section class="screen" id="screen-symptoms">
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-icon">📍</span>
+          痛みの主な部位
+        </h2>
+        <p style="color: var(--gray-400); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
+          最も痛みを感じる部位を選択してください（複数選択可）
+        </p>
+
+        <div class="checkbox-list">
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="painLocation" value="anteriorKnee">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝前面（膝蓋骨周囲）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="painLocation" value="medialAnterior">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝内側前面（関節裂隙付近）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="painLocation" value="tibialMedial">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">脛骨内側で関節裂隙から3〜5cm下方</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="painLocation" value="anteromedial">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝前内側（膝蓋骨内側縁〜大腿骨内顆周囲）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="painLocation" value="infrapatellar">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝蓋腱両側（膝蓋骨下〜脛骨粗面の間）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="painLocation" value="medialJointLine">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">内側関節裂隙（膝を曲げた時に触れる内側の隙間）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="painLocation" value="lateralJointLine">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">外側関節裂隙（膝を曲げた時に触れる外側の隙間）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="painLocation" value="medialLowerLeg">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">下腿内側への放散痛がある</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="painLocation" value="other">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">その他の部位</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-icon">⚡</span>
+          痛みを誘発する動作
+        </h2>
+
+        <div class="checkbox-list">
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="provocative" value="stairClimbing">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">階段「昇り」で痛い</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="provocative" value="stairDescending">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">階段「降り」で痛い</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="provocative" value="standingUp">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">立ち上がりで痛い</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="provocative" value="deepSquat">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">深いしゃがみ込み（スクワット）で痛い</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="provocative" value="runningJumping">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">ランニング・ジャンプで痛い</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="provocative" value="theaterSign">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">長時間座位後の立ち上がり（シアターサイン）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="provocative" value="initialMovement">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">歩き始めだけ痛い</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="provocative" value="terminalExtension">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝を完全に伸ばしきると痛い</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="provocative" value="weightBearingFlexion">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝関節屈曲時の荷重で痛い（しゃがみ・膝立ちなど）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="provocative" value="twistingPivot">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">ひねり・方向転換で痛い</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="provocative" value="prolongedSitting">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">長時間座位で悪化する</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="provocative" value="other">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">その他の動作</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-icon">🔔</span>
+          症状の性質
+        </h2>
+
+        <div class="checkbox-list">
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="symptomChar" value="catchingClicking">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">引っかかり感・クリック感がある</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="symptomChar" value="instability">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝が抜ける・不安定感がある</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="symptomChar" value="localSwelling">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">局所の腫脹がある</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="symptomChar" value="localHeat">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">熱感がある</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="symptomChar" value="locking">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝がロックする（一時的に動かなくなる）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="symptomChar" value="jointEffusion">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝全体が腫れる（関節水腫）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="symptomChar" value="burningTingling">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">灼熱感・ピリピリ感がある</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="symptomChar" value="numbness">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">しびれがある（膝内側〜下腿内側）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="symptomChar" value="other">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">その他の症状</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="goToScreen('basic')">← 戻る</button>
+        <button class="btn btn-primary" onclick="goToScreen('examination')">次へ →</button>
+      </div>
+    </section>
+
+    <!-- Screen 4: Examination -->
+    <section class="screen" id="screen-examination">
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-icon">🔍</span>
+          触診所見
+        </h2>
+
+        <div class="form-group">
+          <label class="form-label">脛骨内側（関節裂隙より3〜5cm下方）の限局圧痛</label>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="tibialTenderness" id="tibial-none" value="none" class="option-input">
+              <label class="option-label" for="tibial-none">なし</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="tibialTenderness" id="tibial-mild" value="mild" class="option-input">
+              <label class="option-label" for="tibial-mild">軽度</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="tibialTenderness" id="tibial-marked" value="marked" class="option-input">
+              <label class="option-label" for="tibial-marked">明らかに強い</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkbox-list">
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="palpation" value="jointLineTenderness">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">関節裂隙そのものの圧痛あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="palpation" value="patellarFacetTenderness">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝蓋骨周囲（内外側ファセット）の圧痛あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="palpation" value="plicaPalpation">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝蓋骨内側縁〜内側関節裂隙上方で索状物を触知＋圧痛</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="palpation" value="tibialNodule">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">脛骨内側に腫瘤状膨隆・結節を触れる</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="palpation" value="localSwellingHeat">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">局所の腫脹・熱感あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="palpation" value="hoffaTenderness">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝蓋腱の両側（膝蓋下脂肪体）に限局した圧痛あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="palpation" value="infrapatellarBranchTenderness">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝蓋下枝の走行（縫工筋付着部内側）に圧痛あり</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-icon">🩺</span>
+          徒手検査
+        </h2>
+
+        <div class="form-group">
+          <label class="form-label">外反ストレステスト（MCL）</label>
+          <p class="test-description">膝を軽度屈曲位で固定し、下腿に外反力を加える。内側の弛緩・疼痛を確認。</p>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="valgusStress" id="valgus-positive" value="positive" class="option-input">
+              <label class="option-label" for="valgus-positive">陽性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="valgusStress" id="valgus-negative" value="negative" class="option-input">
+              <label class="option-label" for="valgus-negative">陰性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="valgusStress" id="valgus-notdone" value="notDone" class="option-input">
+              <label class="option-label" for="valgus-notdone">未実施</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkbox-list" style="margin-bottom: var(--spacing-lg);">
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="manualTest" value="squatPain">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">スクワットで膝蓋骨周囲痛が再現</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Clarkeテスト</label>
+          <p class="test-description">膝蓋骨上縁を下方に押さえ、患者に大腿四頭筋を収縮させる。膝蓋骨下の疼痛で陽性。</p>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="clarkeTest" id="clarke-positive" value="positive" class="option-input">
+              <label class="option-label" for="clarke-positive">陽性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="clarkeTest" id="clarke-negative" value="negative" class="option-input">
+              <label class="option-label" for="clarke-negative">陰性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="clarkeTest" id="clarke-notdone" value="notDone" class="option-input">
+              <label class="option-label" for="clarke-notdone">未実施</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">膝蓋骨傾斜（Patellar tilt）テスト</label>
+          <p class="test-description">膝伸展位で膝蓋骨外側縁を持ち上げ、外側への傾斜角度を評価。外側タイトネスの指標。</p>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="patellarTilt" id="tilt-positive" value="positive" class="option-input">
+              <label class="option-label" for="tilt-positive">陽性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="patellarTilt" id="tilt-negative" value="negative" class="option-input">
+              <label class="option-label" for="tilt-negative">陰性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="patellarTilt" id="tilt-notdone" value="notDone" class="option-input">
+              <label class="option-label" for="tilt-notdone">未実施</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">膝蓋骨不安（Apprehension）テスト</label>
+          <p class="test-description">膝蓋骨を外側へ押しながら膝を屈曲。脱臼への恐怖で筋緊張や抵抗が出れば陽性。</p>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="apprehension" id="appr-positive" value="positive" class="option-input">
+              <label class="option-label" for="appr-positive">陽性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="apprehension" id="appr-negative" value="negative" class="option-input">
+              <label class="option-label" for="appr-negative">陰性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="apprehension" id="appr-notdone" value="notDone" class="option-input">
+              <label class="option-label" for="appr-notdone">未実施</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">MPPテスト（medio-patellar plica test）</label>
+          <p class="test-description">膝蓋骨内側縁を押しながら膝を屈伸。内側タナを圧迫した際の痛みや引っかかりで陽性。</p>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="mppTest" id="mpp-positive" value="positive" class="option-input">
+              <label class="option-label" for="mpp-positive">陽性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="mppTest" id="mpp-negative" value="negative" class="option-input">
+              <label class="option-label" for="mpp-negative">陰性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="mppTest" id="mpp-notdone" value="notDone" class="option-input">
+              <label class="option-label" for="mpp-notdone">未実施</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Stutterテスト</label>
+          <p class="test-description">膝蓋骨内側縁に指を当て、膝を伸展→屈曲。40〜60°付近で引っかかりやクリックを感じれば陽性。</p>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="stutterTest" id="stutter-positive" value="positive" class="option-input">
+              <label class="option-label" for="stutter-positive">陽性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="stutterTest" id="stutter-negative" value="negative" class="option-input">
+              <label class="option-label" for="stutter-negative">陰性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="stutterTest" id="stutter-notdone" value="notDone" class="option-input">
+              <label class="option-label" for="stutter-notdone">未実施</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Hoffaテスト（膝蓋下脂肪体圧迫テスト）</label>
+          <p class="test-description">膝30°屈曲位で膝蓋腱両側を押しながら膝を伸展。脂肪体がインピンジされて痛みが出れば陽性。</p>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="hoffaTest" id="hoffa-positive" value="positive" class="option-input">
+              <label class="option-label" for="hoffa-positive">陽性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="hoffaTest" id="hoffa-negative" value="negative" class="option-input">
+              <label class="option-label" for="hoffa-negative">陰性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="hoffaTest" id="hoffa-notdone" value="notDone" class="option-input">
+              <label class="option-label" for="hoffa-notdone">未実施</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">McMurrayテスト</label>
+          <p class="test-description">膝屈曲位から内外旋しながら伸展。関節裂隙でクリック・痛みが出れば陽性。</p>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="mcMurrayTest" id="mcmurray-positive" value="positive" class="option-input">
+              <label class="option-label" for="mcmurray-positive">陽性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="mcMurrayTest" id="mcmurray-negative" value="negative" class="option-input">
+              <label class="option-label" for="mcmurray-negative">陰性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="mcMurrayTest" id="mcmurray-notdone" value="notDone" class="option-input">
+              <label class="option-label" for="mcmurray-notdone">未実施</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Apleyテスト</label>
+          <p class="test-description">腹臥位で膝90°屈曲。下腿を圧迫しながら内外旋し痛みが出れば陽性。</p>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="apleyTest" id="apley-positive" value="positive" class="option-input">
+              <label class="option-label" for="apley-positive">陽性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="apleyTest" id="apley-negative" value="negative" class="option-input">
+              <label class="option-label" for="apley-negative">陰性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="apleyTest" id="apley-notdone" value="notDone" class="option-input">
+              <label class="option-label" for="apley-notdone">未実施</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Thessalyテスト</label>
+          <p class="test-description">片脚立位で膝5°・20°屈曲位で体幹回旋。痛み・クリックが出れば陽性。</p>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="thessalyTest" id="thessaly-positive" value="positive" class="option-input">
+              <label class="option-label" for="thessaly-positive">陽性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="thessalyTest" id="thessaly-negative" value="negative" class="option-input">
+              <label class="option-label" for="thessaly-negative">陰性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="thessalyTest" id="thessaly-notdone" value="notDone" class="option-input">
+              <label class="option-label" for="thessaly-notdone">未実施</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tinel徴候（伏在神経）</label>
+          <p class="test-description">内転筋管や膝蓋下枝走行部を叩打。放散するしびれ・電撃痛が出れば陽性。</p>
+          <div class="option-group">
+            <div class="option-item">
+              <input type="radio" name="tinelSign" id="tinel-positive" value="positive" class="option-input">
+              <label class="option-label" for="tinel-positive">陽性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="tinelSign" id="tinel-negative" value="negative" class="option-input">
+              <label class="option-label" for="tinel-negative">陰性</label>
+            </div>
+            <div class="option-item">
+              <input type="radio" name="tinelSign" id="tinel-notdone" value="notDone" class="option-input">
+              <label class="option-label" for="tinel-notdone">未実施</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="goToScreen('symptoms')">← 戻る</button>
+        <button class="btn btn-primary" onclick="goToScreen('imaging')">次へ →</button>
+      </div>
+    </section>
+
+    <!-- Screen 5: Imaging -->
+    <section class="screen" id="screen-imaging">
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-icon">📷</span>
+          画像所見（任意）
+        </h2>
+        <p style="color: var(--gray-400); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
+          画像検査を実施している場合は該当する所見を選択してください
+        </p>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">X線</h3>
+        <div class="checkbox-list">
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="xray" value="oaChanges">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">変形性膝関節症所見あり（関節裂隙狭小・骨棘など）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="xray" value="pesSpurs">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">鵞足部付近の骨棘あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="xray" value="patellarMalalignment">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝蓋骨アライメント異常（高位/低位、外側亜脱臼傾向）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="xray" value="noAbnormality">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">特に異常なし</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">超音波検査</h3>
+        <div class="checkbox-list">
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="ultrasound" value="pesBursaSwelling">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">鵞足滑液包の腫大・液体貯留あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="ultrasound" value="plicaThickening">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">滑膜ヒダ（棚）と思われる線状構造の肥厚あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="ultrasound" value="patellarTendonChanges">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">膝蓋腱肥厚あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="ultrasound" value="hoffaSwelling">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">Hoffa脂肪体の腫大・高エコー変化あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="ultrasound" value="meniscusExtrusion">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">半月板の逸脱（extrusion）あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="ultrasound" value="saphenousNerveSwelling">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">伏在神経・膝蓋下枝の腫大あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="ultrasound" value="notDone">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">特に異常なし / 未施行</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">MRI（あれば）</h3>
+        <div class="checkbox-list">
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="mri" value="pesTendonChanges">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">鵞足腱肥厚＋T2高信号（滑液包内液体貯留）あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="mri" value="plicaEdema">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">内側タナ肥厚（3〜4mm以上）＋周囲浮腫あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="mri" value="pfCartilage">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">PF関節軟骨変性・骨髄浮腫あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="mri" value="hoffaEdema">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">Hoffa脂肪体のT2高信号・浮腫あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="mri" value="meniscusTear">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">半月板断裂あり（Grade 3信号変化など）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="mri" value="saphenousNerveSignal">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">伏在神経の信号変化・浮腫あり</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="mri" value="meniscusLigament">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">靭帯損傷あり（ACL/MCLなど）</span>
+          </label>
+          <label class="checkbox-item" onclick="toggleCheckbox(this)">
+            <input type="checkbox" name="mri" value="notDone">
+            <div class="checkbox-box"></div>
+            <span class="checkbox-text">特に異常なし / 未施行</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="goToScreen('examination')">← 戻る</button>
+        <button class="btn btn-primary" onclick="calculateResults()">結果を見る →</button>
+      </div>
+    </section>
+
+    <!-- Screen 6: Results -->
+    <section class="screen" id="screen-results">
+
+      <div class="result-card">
+        <h2 class="result-title">推定結果</h2>
+
+        <div class="probability-bars">
+          <div class="probability-item pes">
+            <div class="probability-header">
+              <span class="disease-name">🦵 鵞足炎</span>
+              <span>
+                <span class="probability-value" id="pesProb">0%</span>
+                <span class="category-badge" id="pesCat"></span>
+              </span>
+            </div>
+            <div class="probability-bar">
+              <div class="probability-fill" id="pesFill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="probability-item pfps">
+            <div class="probability-header">
+              <span class="disease-name">🦴 膝蓋大腿関節障害 (PFPS)</span>
+              <span>
+                <span class="probability-value" id="pfpsProb">0%</span>
+                <span class="category-badge" id="pfpsCat"></span>
+              </span>
+            </div>
+            <div class="probability-bar">
+              <div class="probability-fill" id="pfpsFill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="probability-item plica">
+            <div class="probability-header">
+              <span class="disease-name">🔗 タナ障害</span>
+              <span>
+                <span class="probability-value" id="plicaProb">0%</span>
+                <span class="category-badge" id="plicaCat"></span>
+              </span>
+            </div>
+            <div class="probability-bar">
+              <div class="probability-fill" id="plicaFill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="probability-item hoffa">
+            <div class="probability-header">
+              <span class="disease-name">🔶 Hoffa脂肪体炎</span>
+              <span>
+                <span class="probability-value" id="hoffaProb">0%</span>
+                <span class="category-badge" id="hoffaCat"></span>
+              </span>
+            </div>
+            <div class="probability-bar">
+              <div class="probability-fill" id="hoffaFill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="probability-item meniscus">
+            <div class="probability-header">
+              <span class="disease-name">🌙 半月板損傷</span>
+              <span>
+                <span class="probability-value" id="meniscusProb">0%</span>
+                <span class="category-badge" id="meniscusCat"></span>
+              </span>
+            </div>
+            <div class="probability-bar">
+              <div class="probability-fill" id="meniscusFill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="probability-item saphenous">
+            <div class="probability-header">
+              <span class="disease-name">⚡ 伏在神経障害</span>
+              <span>
+                <span class="probability-value" id="saphenousProb">0%</span>
+                <span class="category-badge" id="saphenousCat"></span>
+              </span>
+            </div>
+            <div class="probability-bar">
+              <div class="probability-fill" id="saphenousFill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="probability-item other">
+            <div class="probability-header">
+              <span class="disease-name">❓ その他</span>
+              <span>
+                <span class="probability-value" id="otherProb">0%</span>
+                <span class="category-badge" id="otherCat"></span>
+              </span>
+            </div>
+            <div class="probability-bar">
+              <div class="probability-fill" id="otherFill" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="resultChart" width="250" height="250"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">📊 特徴的だった所見</h3>
+        <div id="topFactors">
+          <!-- 動的に追加 -->
+        </div>
+      </div>
+
+      <div class="recommendations" id="recommendationsSection">
+        <div class="recommendations-title">
+          💡 推奨アクション
+        </div>
+        <ul class="recommendation-list" id="recommendationList">
+          <!-- 動的に追加 -->
+        </ul>
+      </div>
+
+      <div class="disclaimer">
+        <div class="disclaimer-title">⚠️ 重要な注意事項</div>
+        <div class="disclaimer-text">
+          <strong>本結果は診断ではなく、臨床推論を整理するための推定値です。</strong><br><br>
+          最終的な診断は医師が行います。
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="goToScreen('home')">ホームへ戻る</button>
+        <button class="btn btn-primary" onclick="saveCase()">症例を保存</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="scoring-config.js"></script>
+  <script src="scoring-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
