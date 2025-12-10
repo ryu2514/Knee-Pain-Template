@@ -22,13 +22,13 @@
 <body>
   <div class="app-container">
     <!-- Header -->
-    <header class="app-header">
+    <header class="app-header" id="appHeader" style="display: none;">
       <h1 class="app-logo">🦵 膝痛問診チェックリスト</h1>
       <p class="app-subtitle">臨床推論サポートツール</p>
     </header>
 
     <!-- Progress Bar -->
-    <div class="progress-container" id="progressContainer">
+    <div class="progress-container" id="progressContainer" style="display: none;">
       <div class="progress-steps">
         <div class="progress-step active" data-step="1">
           <div class="step-circle">1</div>
@@ -57,8 +57,44 @@
       </div>
     </div>
 
+    <!-- Screen 0: Welcome (Landing Page) -->
+    <section class="screen active" id="screen-welcome">
+      <div class="welcome-container">
+        <div class="welcome-card">
+          <div class="welcome-icon">
+            🦵
+          </div>
+          <h1 class="welcome-title">膝痛問診チェックリスト</h1>
+          <p class="welcome-subtitle">臨床推論をサポートする評価ツール</p>
+
+          <div class="welcome-features">
+            <div class="feature-item">
+              <div class="feature-icon">📋</div>
+              <div class="feature-text">体系的な問診・検査項目</div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">🎯</div>
+              <div class="feature-text">7つの疾患を推定</div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">💾</div>
+              <div class="feature-text">症例保存・CSV出力</div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-hero" onclick="enterApp()">
+            ここから開始する
+          </button>
+
+          <div class="welcome-disclaimer">
+            本ツールは診断を行うものではなく、臨床推論を整理するための参考ツールです
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Screen 1: Home -->
-    <section class="screen active" id="screen-home">
+    <section class="screen" id="screen-home">
       <div class="card">
         <h2 class="card-title">
           <span class="card-icon">📋</span>

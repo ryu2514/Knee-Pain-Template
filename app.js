@@ -6,10 +6,10 @@
 // ========================
 // グローバル状態
 // ========================
-let currentScreen = 'home';
+let currentScreen = 'welcome';
 let caseData = {};
 let scoringEngine = null;
-let visitedScreens = new Set(['home']); // 訪問済み画面を追跡
+let visitedScreens = new Set(['welcome']); // 訪問済み画面を追跡
 
 // ========================
 // 初期化
@@ -34,6 +34,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // 既往歴「その他」の表示切り替え
     setupHistoryOtherToggle();
 });
+
+// ========================
+// アプリに入る（Welcome画面から）
+// ========================
+function enterApp() {
+    // ヘッダーとプログレスバーを表示
+    document.getElementById('appHeader').style.display = 'block';
+    document.getElementById('progressContainer').style.display = 'block';
+
+    // ホーム画面に遷移
+    goToScreen('home');
+}
 
 // ========================
 // プログレスタブのセットアップ
@@ -79,7 +91,21 @@ function goToScreen(screenName) {
         newScreen.classList.add('active');
         currentScreen = screenName;
         visitedScreens.add(screenName); // 訪問済みに追加
-        updateProgress(screenName);
+
+        // welcome画面以外ではプログレスバーを更新
+        if (screenName !== 'welcome') {
+            updateProgress(screenName);
+        }
+
+        // welcome画面ではヘッダーとプログレスバーを非表示
+        if (screenName === 'welcome') {
+            document.getElementById('appHeader').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'none';
+        } else {
+            document.getElementById('appHeader').style.display = 'block';
+            document.getElementById('progressContainer').style.display = 'block';
+        }
+
         window.scrollTo(0, 0);
     }
 }
