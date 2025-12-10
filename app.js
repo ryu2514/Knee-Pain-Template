@@ -27,6 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // プログレスステップにクリックイベントを追加
     setupProgressTabs();
+
+    // チェックボックスのイベントリスナーを追加
+    setupCheckboxListeners();
 });
 
 // ========================
@@ -162,9 +165,29 @@ function calculateBMI() {
 }
 
 // ========================
-// チェックボックストグル
+// チェックボックスのセットアップ
+// ========================
+function setupCheckboxListeners() {
+    // すべてのチェックボックスにchangeイベントを追加
+    document.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const label = this.closest('.checkbox-item');
+            if (label) {
+                if (this.checked) {
+                    label.classList.add('checked');
+                } else {
+                    label.classList.remove('checked');
+                }
+            }
+        });
+    });
+}
+
+// ========================
+// チェックボックストグル（後方互換性のため残す）
 // ========================
 function toggleCheckbox(element) {
+    // この関数は現在使用されていませんが、後方互換性のため残します
     element.classList.toggle('checked');
     const checkbox = element.querySelector('input[type="checkbox"]');
     if (checkbox) {
