@@ -1,6 +1,6 @@
 /**
  * 膝痛問診チェックリスト - メインアプリケーション
- * 画面遷移、フォーム処理、症例保存
+ * 画面遷移、フォーム処理、ケースメモ保存
  */
 
 // ========================
@@ -11,6 +11,46 @@ let caseData = {};
 let scoringEngine = null;
 let visitedScreens = new Set(['welcome']); // 訪問済み画面を追跡
 
+const OBSERVATION_LABELS = {
+    pes: '内側下方の確認観点',
+    pfps: '膝前面の確認観点',
+    plica: '前内側の確認観点',
+    hoffa: '膝蓋下部の確認観点',
+    meniscus: '関節裂隙周辺の確認観点',
+    saphenous: '内側〜下腿の感覚確認',
+    other: 'その他の確認観点'
+};
+
+const OBSERVATION_SHORT_LABELS = {
+    pes: '内側下方',
+    pfps: '膝前面',
+    plica: '前内側',
+    hoffa: '膝蓋下部',
+    meniscus: '関節裂隙',
+    saphenous: '内側感覚',
+    other: 'その他'
+};
+
+function sanitizeClinicalText(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/鵞足炎/g, '内側下方の所見')
+        .replace(/PFPS/g, '膝前面の所見')
+        .replace(/膝蓋大腿関節障害/g, '膝前面の所見')
+        .replace(/タナ障害/g, '前内側の所見')
+        .replace(/Hoffa脂肪体炎/g, '膝蓋下部の所見')
+        .replace(/脂肪体炎/g, '膝蓋下部の所見')
+        .replace(/半月板損傷/g, '関節裂隙周辺の所見')
+        .replace(/伏在神経障害/g, '内側〜下腿の感覚所見')
+        .replace(/疾患/g, '観点')
+        .replace(/リスク/g, '関連観点')
+        .replace(/正常/g, '目立つ所見なし')
+        .replace(/異常/g, '特徴的な所見')
+        .replace(/強く示唆/g, '確認観点として目立つ')
+        .replace(/示唆/g, '確認観点として挙がる')
+        .replace(/確定的/g, '記録上目立つ');
+}
+
 // ========================
 // 初期化
 // ========================
@@ -18,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // スコアリングエンジン初期化
     scoringEngine = new ScoringEngine(SCORING_CONFIG);
 
-    // 症例履歴を読み込み
+    // ケースメモ履歴を読み込み
     loadCaseHistory();
 
     // BMI自動計算イベント
@@ -125,7 +165,7 @@ function updateProgress(screenName) {
 }
 
 // ========================
-// 新規症例
+// 新規ケースメモ
 // ========================
 function startNewCase() {
     // データリセット
@@ -387,16 +427,7 @@ function calculateResults() {
 // 結果表示
 // ========================
 function displayResults(results) {
-    // 確率表示
-    document.getElementById('pesProb').textContent = `${results.probabilities.pes}%`;
-    document.getElementById('pfpsProb').textContent = `${results.probabilities.pfps}%`;
-    document.getElementById('plicaProb').textContent = `${results.probabilities.plica}%`;
-    document.getElementById('hoffaProb').textContent = `${results.probabilities.hoffa}%`;
-    document.getElementById('meniscusProb').textContent = `${results.probabilities.meniscus}%`;
-    document.getElementById('saphenousProb').textContent = `${results.probabilities.saphenous}%`;
-    document.getElementById('otherProb').textContent = `${results.probabilities.other}%`;
-
-    // バーアニメーション
+    // バーアニメーション（数値%は表示せず、相対的な偏りのみを可視化する）
     setTimeout(() => {
         document.getElementById('pesFill').style.width = `${results.probabilities.pes}%`;
         document.getElementById('pfpsFill').style.width = `${results.probabilities.pfps}%`;
@@ -408,7 +439,7 @@ function displayResults(results) {
     }, 100);
 
     // カテゴリバッジ
-    const catLabels = { low: '低', moderate: '中', high: '高' };
+    const catLabels = { low: '少', moderate: '中', high: '多' };
     const catClasses = { low: 'category-low', moderate: 'category-moderate', high: 'category-high' };
 
     ['pes', 'pfps', 'plica', 'hoffa', 'meniscus', 'saphenous', 'other'].forEach(disease => {
@@ -424,7 +455,7 @@ function displayResults(results) {
     // 寄与因子表示
     displayTopFactors(results.topFactors);
 
-    // 推奨アクション表示
+    // 次に確認する観点の表示
     displayRecommendations(results);
 }
 
@@ -442,13 +473,13 @@ function drawPieChart(probabilities) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const data = [
-        { value: probabilities.pes, color: '#f97316', label: '鵞足炎' },
-        { value: probabilities.pfps, color: '#8b5cf6', label: 'PFPS' },
-        { value: probabilities.plica, color: '#06b6d4', label: 'タナ障害' },
-        { value: probabilities.hoffa, color: '#f59e0b', label: 'Hoffa脂肪体炎' },
-        { value: probabilities.meniscus, color: '#10b981', label: '半月板損傷' },
-        { value: probabilities.saphenous, color: '#ec4899', label: '伏在神経障害' },
-        { value: probabilities.other, color: '#6b7280', label: 'その他' }
+        { value: probabilities.pes, color: '#f97316', label: OBSERVATION_LABELS.pes },
+        { value: probabilities.pfps, color: '#8b5cf6', label: OBSERVATION_LABELS.pfps },
+        { value: probabilities.plica, color: '#06b6d4', label: OBSERVATION_LABELS.plica },
+        { value: probabilities.hoffa, color: '#f59e0b', label: OBSERVATION_LABELS.hoffa },
+        { value: probabilities.meniscus, color: '#10b981', label: OBSERVATION_LABELS.meniscus },
+        { value: probabilities.saphenous, color: '#ec4899', label: OBSERVATION_LABELS.saphenous },
+        { value: probabilities.other, color: '#6b7280', label: OBSERVATION_LABELS.other }
     ];
 
     let startAngle = -Math.PI / 2;
@@ -465,20 +496,7 @@ function drawPieChart(probabilities) {
             ctx.fillStyle = item.color;
             ctx.fill();
 
-            // ラベル
-            const labelAngle = startAngle + sliceAngle / 2;
-            const labelRadius = radius * 0.65;
-            const labelX = centerX + Math.cos(labelAngle) * labelRadius;
-            const labelY = centerY + Math.sin(labelAngle) * labelRadius;
-
-            if (item.value >= 10) {
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 12px "Noto Sans JP", sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(`${item.value}%`, labelX, labelY);
-            }
-
+            // 数値%は表示せず、相対的な配分のみを色分けで示す
             startAngle += sliceAngle;
         }
     });
@@ -497,7 +515,7 @@ function displayTopFactors(topFactors) {
     const container = document.getElementById('topFactors');
     container.innerHTML = '';
 
-    const diseaseNames = { pes: '鵞足炎', pfps: 'PFPS', plica: 'タナ障害', hoffa: 'Hoffa脂肪体炎', meniscus: '半月板損傷', saphenous: '伏在神経障害', other: 'その他' };
+    const diseaseNames = OBSERVATION_LABELS;
     const diseaseColors = { pes: 'var(--pes-color)', pfps: 'var(--pfps-color)', plica: 'var(--plica-color)', hoffa: 'var(--hoffa-color)', meniscus: 'var(--meniscus-color)', saphenous: 'var(--saphenous-color)', other: 'var(--other-color)' };
 
     ['pes', 'pfps', 'plica', 'hoffa', 'meniscus', 'saphenous', 'other'].forEach(disease => {
@@ -519,7 +537,7 @@ function displayTopFactors(topFactors) {
                 item.className = 'factor-item';
                 item.innerHTML = `
           <span class="factor-score positive">+${factor.score}</span>
-          <span>${factor.description || factor.item}</span>
+          <span>${sanitizeClinicalText(factor.description || factor.item)}</span>
         `;
                 section.appendChild(item);
             });
@@ -534,7 +552,7 @@ function displayTopFactors(topFactors) {
 }
 
 // ========================
-// 推奨アクション表示
+// 次に確認する観点の表示
 // ========================
 function displayRecommendations(results) {
     const list = document.getElementById('recommendationList');
@@ -542,7 +560,7 @@ function displayRecommendations(results) {
 
     let hasRecommendations = false;
 
-    // 最も可能性が高い疾患を優先
+    // 最もスコアが高い観点を優先
     const sortedDiseases = ['pes', 'pfps', 'plica', 'hoffa', 'meniscus', 'saphenous', 'other'].sort((a, b) =>
         results.probabilities[b] - results.probabilities[a]
     );
@@ -561,13 +579,13 @@ function displayRecommendations(results) {
 
     if (!hasRecommendations) {
         const li = document.createElement('li');
-        li.textContent = '追加評価の推奨はありません。各疾患の可能性は低いと推定されます。';
+        li.textContent = '追加で確認する観点は少なめです。所見を振り返りながら整理してください。';
         list.appendChild(li);
     }
 }
 
 // ========================
-// 症例保存
+// ケースメモ保存
 // ========================
 function saveCase() {
     const cases = JSON.parse(localStorage.getItem('kneeCases') || '[]');
@@ -588,11 +606,11 @@ function saveCase() {
     loadCaseHistory();
 
     // 通知
-    alert('症例を保存しました！\n\n📂 保存した症例の見返し方:\n1. ホーム画面に戻る\n2. 「最近の症例」セクションから症例をクリック\n\n💡 この画面からCSVファイルもダウンロードできます');
+    alert('ケースメモを保存しました。\n\n保存したメモの見返し方:\n1. ホーム画面に戻る\n2. 「最近のケースメモ」セクションからメモをクリック\n\nこの画面からCSVファイルもダウンロードできます');
 }
 
 // ========================
-// 症例履歴読み込み
+// ケースメモ履歴読み込み
 // ========================
 function loadCaseHistory() {
     const container = document.getElementById('caseHistory');
@@ -602,7 +620,7 @@ function loadCaseHistory() {
         container.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">📋</div>
-        <p>保存された症例はありません</p>
+        <p>保存されたケースメモはありません</p>
       </div>
     `;
         return;
@@ -622,9 +640,9 @@ function loadCaseHistory() {
         if (caseItem.results) {
             const { probabilities } = caseItem.results;
             resultBadges = `
-        <span class="mini-badge pes">${probabilities.pes}%</span>
-        <span class="mini-badge pfps">${probabilities.pfps}%</span>
-        <span class="mini-badge plica">${probabilities.plica}%</span>
+        <span class="mini-badge pes">${OBSERVATION_SHORT_LABELS.pes} ${probabilities.pes}%</span>
+        <span class="mini-badge pfps">${OBSERVATION_SHORT_LABELS.pfps} ${probabilities.pfps}%</span>
+        <span class="mini-badge plica">${OBSERVATION_SHORT_LABELS.plica} ${probabilities.plica}%</span>
       `;
         }
 
@@ -641,7 +659,7 @@ function loadCaseHistory() {
 }
 
 // ========================
-// 症例読み込み
+// ケースメモ読み込み
 // ========================
 function loadCase(caseItem) {
     caseData = { ...caseItem };
@@ -665,8 +683,8 @@ function exportToCSV() {
 
     // CSV ヘッダー
     const headers = [
-        '症例ID',
-        '患者ID',
+        'メモID',
+        'ケースID',
         '作成日時',
         '年齢',
         '性別',
@@ -679,19 +697,19 @@ function exportToCSV() {
         '膝手術歴',
         '膝注射歴',
         'その他既往歴',
-        '鵞足炎確率(%)',
-        'PFPS確率(%)',
-        'タナ障害確率(%)',
-        'Hoffa脂肪体炎確率(%)',
-        '半月板損傷確率(%)',
-        '伏在神経障害確率(%)',
-        'その他確率(%)',
-        '鵞足炎カテゴリ',
-        'PFPSカテゴリ',
-        'タナ障害カテゴリ',
-        'Hoffa脂肪体炎カテゴリ',
-        '半月板損傷カテゴリ',
-        '伏在神経障害カテゴリ',
+        '内側下方の整理比率(%)',
+        '膝前面の整理比率(%)',
+        '前内側の整理比率(%)',
+        '膝蓋下部の整理比率(%)',
+        '関節裂隙周辺の整理比率(%)',
+        '内側〜下腿感覚の整理比率(%)',
+        'その他の整理比率(%)',
+        '内側下方カテゴリ',
+        '膝前面カテゴリ',
+        '前内側カテゴリ',
+        '膝蓋下部カテゴリ',
+        '関節裂隙周辺カテゴリ',
+        '内側〜下腿感覚カテゴリ',
         'その他カテゴリ'
     ];
 
@@ -699,7 +717,7 @@ function exportToCSV() {
     const genderMap = { male: '男性', female: '女性', other: 'その他' };
     const sideMap = { right: '右', left: '左', both: '両側' };
     const durationMap = { acute: '1週間未満', subacute: '1週間〜3ヶ月', chronic: '3ヶ月以上' };
-    const catMap = { low: '低', moderate: '中', high: '高' };
+    const catMap = { low: '少', moderate: '中', high: '多' };
 
     const date = new Date(caseData.createdAt);
     const dateStr = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
@@ -759,7 +777,7 @@ function exportToCSV() {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `膝痛評価_${caseData.id || 'export'}.csv`);
+    link.setAttribute('download', `膝まわり問診メモ_${caseData.id || 'export'}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();

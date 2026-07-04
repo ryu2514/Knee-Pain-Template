@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="膝痛患者の鵞足炎・PFPS・タナ障害の可能性を推定する臨床推論サポートツール">
-  <title>膝痛問診チェックリスト | 臨床推論サポートツール</title>
+  <meta name="description" content="膝まわりの相談内容と所見を整理する学習用ケースメモツール">
+  <title>膝まわり問診メモ | ケース整理ツール</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -23,8 +23,8 @@
   <div class="app-container">
     <!-- Header -->
     <header class="app-header" id="appHeader" style="display: none;">
-      <h1 class="app-logo">🦵 膝痛問診チェックリスト</h1>
-      <p class="app-subtitle">臨床推論サポートツール</p>
+      <h1 class="app-logo">🦵 膝まわり問診メモ</h1>
+      <p class="app-subtitle">ケース整理ツール</p>
     </header>
 
     <!-- Progress Bar -->
@@ -64,8 +64,8 @@
           <div class="welcome-icon">
             <img src="knee-anatomy.png" alt="膝の解剖図" class="welcome-image">
           </div>
-          <h1 class="welcome-title">膝痛問診チェックリスト</h1>
-          <p class="welcome-subtitle">臨床推論をサポートする評価ツール</p>
+          <h1 class="welcome-title">膝まわり問診メモ</h1>
+          <p class="welcome-subtitle">臨床推論の学習を支えるケース整理ツール</p>
 
           <div class="welcome-features">
             <div class="feature-item">
@@ -74,11 +74,11 @@
             </div>
             <div class="feature-item">
               <div class="feature-icon">🎯</div>
-              <div class="feature-text">7つの疾患を推定</div>
+              <div class="feature-text">複数の観点で所見を整理</div>
             </div>
             <div class="feature-item">
               <div class="feature-icon">💾</div>
-              <div class="feature-text">症例保存・CSV出力</div>
+              <div class="feature-text">ケースメモ保存・CSV出力</div>
             </div>
           </div>
 
@@ -87,7 +87,7 @@
           </button>
 
           <div class="welcome-disclaimer">
-            本ツールは診断を行うものではなく、臨床推論を整理するための参考ツールです
+            本ツールは学習用の整理メモであり、診断・治療方針の決定には使用しないでください
           </div>
         </div>
       </div>
@@ -98,20 +98,20 @@
       <div class="card">
         <h2 class="card-title">
           <span class="card-icon">📋</span>
-          新規評価を開始
+          新規メモを作成
         </h2>
         <p style="color: var(--gray-400); font-size: var(--font-size-sm); margin-bottom: var(--spacing-lg);">
-          膝痛の原因として鵞足炎・PFPS・タナ障害の可能性を推定します。
+          膝まわりの相談内容と所見を、複数の観点から整理します。
         </p>
         <button class="btn btn-primary btn-large" onclick="startNewCase()">
-          ✨ 新規症例を作成
+          ✨ 新規ケースメモを作成
         </button>
       </div>
 
       <div class="card">
         <h2 class="card-title">
           <span class="card-icon">📁</span>
-          最近の症例
+          最近のケースメモ
         </h2>
         <div id="caseHistory" class="case-list">
           <!-- 動的に追加 -->
@@ -121,8 +121,7 @@
       <div class="disclaimer">
         <div class="disclaimer-title">⚠️ ご注意</div>
         <div class="disclaimer-text">
-          本ツールは診断を行うものではありません。臨床推論を整理するための参考ツールとしてご利用ください。
-          最終的な診断は医師が行います。
+          本ツールは学習用の整理メモです。診断・治療方針の決定には使用しないでください。
         </div>
       </div>
     </section>
@@ -136,7 +135,7 @@
         </h2>
 
         <div class="form-group">
-          <label class="form-label">患者ID / 名前（任意）</label>
+          <label class="form-label">ケースID / 名前（任意）</label>
           <input type="text" class="form-input" id="patientId" placeholder="匿名でも可">
         </div>
 
@@ -217,7 +216,7 @@
           <label class="checkbox-item">
             <input type="checkbox" name="history" value="kneeOA">
             <div class="checkbox-box"></div>
-            <span class="checkbox-text">変形性膝関節症と診断されたことがある</span>
+            <span class="checkbox-text">変形性膝関節症を指摘されたことがある</span>
           </label>
           <label class="checkbox-item">
             <input type="checkbox" name="history" value="patellarDislocation">
@@ -227,7 +226,7 @@
           <label class="checkbox-item">
             <input type="checkbox" name="history" value="meniscusLigament">
             <div class="checkbox-box"></div>
-            <span class="checkbox-text">半月板損傷・靭帯損傷の既往がある</span>
+            <span class="checkbox-text">半月板・靭帯まわりの既往がある</span>
           </label>
           <label class="checkbox-item">
             <input type="checkbox" name="history" value="kneeSurgery">
@@ -795,12 +794,12 @@
           <label class="checkbox-item">
             <input type="checkbox" name="xray" value="patellarMalalignment">
             <div class="checkbox-box"></div>
-            <span class="checkbox-text">膝蓋骨アライメント異常（高位/低位、外側亜脱臼傾向）</span>
+            <span class="checkbox-text">膝蓋骨アライメントの特徴（高位/低位、外側亜脱臼傾向）</span>
           </label>
           <label class="checkbox-item">
             <input type="checkbox" name="xray" value="noAbnormality">
             <div class="checkbox-box"></div>
-            <span class="checkbox-text">特に異常なし</span>
+            <span class="checkbox-text">目立つ所見なし</span>
           </label>
         </div>
       </div>
@@ -841,7 +840,7 @@
           <label class="checkbox-item">
             <input type="checkbox" name="ultrasound" value="notDone">
             <div class="checkbox-box"></div>
-            <span class="checkbox-text">特に異常なし / 未施行</span>
+            <span class="checkbox-text">目立つ所見なし / 未施行</span>
           </label>
         </div>
       </div>
@@ -887,7 +886,7 @@
           <label class="checkbox-item">
             <input type="checkbox" name="mri" value="notDone">
             <div class="checkbox-box"></div>
-            <span class="checkbox-text">特に異常なし / 未施行</span>
+            <span class="checkbox-text">目立つ所見なし / 未施行</span>
           </label>
         </div>
       </div>
@@ -902,14 +901,13 @@
     <section class="screen" id="screen-results">
 
       <div class="result-card">
-        <h2 class="result-title">推定結果</h2>
+        <h2 class="result-title">所見整理メモ</h2>
 
         <div class="probability-bars">
           <div class="probability-item pes">
             <div class="probability-header">
-              <span class="disease-name">🦵 鵞足炎</span>
+              <span class="disease-name">🦵 内側下方の確認観点</span>
               <span>
-                <span class="probability-value" id="pesProb">0%</span>
                 <span class="category-badge" id="pesCat"></span>
               </span>
             </div>
@@ -920,9 +918,8 @@
 
           <div class="probability-item pfps">
             <div class="probability-header">
-              <span class="disease-name">🦴 膝蓋大腿関節障害 (PFPS)</span>
+              <span class="disease-name">🦴 膝前面の確認観点</span>
               <span>
-                <span class="probability-value" id="pfpsProb">0%</span>
                 <span class="category-badge" id="pfpsCat"></span>
               </span>
             </div>
@@ -933,9 +930,8 @@
 
           <div class="probability-item plica">
             <div class="probability-header">
-              <span class="disease-name">🔗 タナ障害</span>
+              <span class="disease-name">🔗 前内側の確認観点</span>
               <span>
-                <span class="probability-value" id="plicaProb">0%</span>
                 <span class="category-badge" id="plicaCat"></span>
               </span>
             </div>
@@ -946,9 +942,8 @@
 
           <div class="probability-item hoffa">
             <div class="probability-header">
-              <span class="disease-name">🔶 Hoffa脂肪体炎</span>
+              <span class="disease-name">🔶 膝蓋下部の確認観点</span>
               <span>
-                <span class="probability-value" id="hoffaProb">0%</span>
                 <span class="category-badge" id="hoffaCat"></span>
               </span>
             </div>
@@ -959,9 +954,8 @@
 
           <div class="probability-item meniscus">
             <div class="probability-header">
-              <span class="disease-name">🌙 半月板損傷</span>
+              <span class="disease-name">🌙 関節裂隙周辺の確認観点</span>
               <span>
-                <span class="probability-value" id="meniscusProb">0%</span>
                 <span class="category-badge" id="meniscusCat"></span>
               </span>
             </div>
@@ -972,9 +966,8 @@
 
           <div class="probability-item saphenous">
             <div class="probability-header">
-              <span class="disease-name">⚡ 伏在神経障害</span>
+              <span class="disease-name">⚡ 内側〜下腿の感覚確認</span>
               <span>
-                <span class="probability-value" id="saphenousProb">0%</span>
                 <span class="category-badge" id="saphenousCat"></span>
               </span>
             </div>
@@ -985,9 +978,8 @@
 
           <div class="probability-item other">
             <div class="probability-header">
-              <span class="disease-name">❓ その他</span>
+              <span class="disease-name">❓ その他の確認観点</span>
               <span>
-                <span class="probability-value" id="otherProb">0%</span>
                 <span class="category-badge" id="otherCat"></span>
               </span>
             </div>
@@ -1011,7 +1003,7 @@
 
       <div class="recommendations" id="recommendationsSection">
         <div class="recommendations-title">
-          💡 推奨アクション
+          💡 次に確認する観点
         </div>
         <ul class="recommendation-list" id="recommendationList">
           <!-- 動的に追加 -->
@@ -1021,15 +1013,14 @@
       <div class="disclaimer">
         <div class="disclaimer-title">⚠️ 重要な注意事項</div>
         <div class="disclaimer-text">
-          <strong>本結果は診断ではなく、臨床推論を整理するための推定値です。</strong><br><br>
-          最終的な診断は医師が行います。
+          <strong>本結果は学習用の所見整理メモです。疾患の判定、診断、治療方針の決定には使用しないでください。</strong>
         </div>
       </div>
 
       <div class="btn-group">
         <button class="btn btn-secondary" onclick="goToScreen('home')">ホームへ戻る</button>
         <button class="btn btn-secondary" onclick="exportToCSV()">📥 CSVダウンロード</button>
-        <button class="btn btn-primary" onclick="saveCase()">症例を保存</button>
+        <button class="btn btn-primary" onclick="saveCase()">ケースメモを保存</button>
       </div>
     </section>
   </div>

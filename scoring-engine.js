@@ -250,7 +250,7 @@ class ScoringEngine {
             this.addScore('imaging', 'xray', 'pesSpurs', '鵞足部骨棘');
         }
         if (data.xrayPatellar) {
-            this.addScore('imaging', 'xray', 'patellarMalalignment', '膝蓋骨異常');
+            this.addScore('imaging', 'xray', 'patellarMalalignment', '膝蓋骨の特徴');
         }
 
         // 超音波
